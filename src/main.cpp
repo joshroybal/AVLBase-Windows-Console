@@ -25,6 +25,7 @@ int main(int argc, char *argv[])
 {
 	int select_fields[NOFLDS], find_fields[NOFLDS], order_fields[NOFLDS];
 	char buf[RECSIZ];
+	char fldbuf[FLDLEN];
 	Type field, target, line, header;
 	std::vector<Type> relation;
 
@@ -144,6 +145,8 @@ int input(int select_fields[], int find_fields[], int order_fields[], Type& targ
 void process(std::vector<Type>& relation, int select_fields[], int find_fields[], int order_fields[], const Type& target, int reclen, int nf)
 {
 	char buf[RECSIZ];
+	char fldbuf[FLDLEN];
+	char keybuf[RECSIZ];
 	Type record, field;
 	AVL* BaseTree = new AVL();
 
@@ -152,15 +155,14 @@ void process(std::vector<Type>& relation, int select_fields[], int find_fields[]
 	int n = 0;
 	float t1 = float(clock()) / CLOCKS_PER_SEC;
 	while (direct.read(buf, reclen)) {
-		record = buf;
-		Type key;
+		memset(keybuf, 0, RECSIZ);
 		int idx = 0;
 		while (find_fields[idx] != 0) {
-			if (idx) key += ",";
-			getField(field, record, find_fields[idx++]);
-			key += field;
+			getField(fldbuf, buf, find_fields[idx++]);
+			if (idx) strcat(keybuf, ",");
+			strcat(keybuf, fldbuf);
 		}
-		BaseTree->insert(key, ++n);
+		BaseTree->insert( std::string( keybuf ), ++n );
 	}
 	float t2 = float(clock()) / CLOCKS_PER_SEC;
 	std::cout << " no. of records = " << n << std::endl;

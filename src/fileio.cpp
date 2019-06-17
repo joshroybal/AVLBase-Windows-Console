@@ -3,6 +3,7 @@
 #include <sstream>
 #include <iomanip>
 #include <vector>
+#include <cstring>
 #include "fileio.hpp"
 #include "winscreenio.hpp"
 
@@ -75,6 +76,37 @@ void getField(std::string& field, const std::string& record, int n)
 		j++;
 	}
 	field.clear();
+}
+
+void getField(char* field, const char* record, int n)
+{
+	int i = 0, j = 0, idx = 0;
+
+	memset(field, 0, FLDLEN);
+	while (i < RECSIZ && idx < FLDLEN) {
+		while (record[i] != ',' && i < RECSIZ && idx < FLDLEN) {
+			if (record[i] != '"') {
+				if (j + 1 == n)
+					field[idx++] = record[i++];
+				else
+					i++;
+			} 
+			else {
+				i++;
+				while (record[i] != '"') {
+					if (j + 1 == n)
+						field[idx++] = record[i++];
+					else
+						i++;
+				}
+				i++;
+			}
+		}
+		if (j + 1 == n) return;
+		i++;
+		j++;
+	}
+	memset(field, 0, FLDLEN);
 }
 
 bool containsComma(const std::string& str)
